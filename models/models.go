@@ -57,11 +57,12 @@ func (f *File) newMethodFromProto(desc *descriptorpb.MethodDescriptorProto) *Met
 }
 
 func (f *File) getGoType(t string) string {
-	if strings.HasPrefix(t, ".") {
-		return t[1:]
+	if t[0] == '.' {
+		t = t[1:]
 	}
-	if f.Package != "" && strings.HasPrefix(t, f.Package) {
-		return t[len(f.Package):]
+
+	if f.Package != "" && strings.HasPrefix(t, f.Package+".") {
+		return t[len(f.Package)+1:]
 	}
 
 	return t
