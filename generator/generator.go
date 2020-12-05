@@ -73,7 +73,7 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 		g.writeMethodDefinition(m)
 
 		fmt.Fprintf(g.w, ` {
-	resp := &%s{}
+	resp := new(%s)
 	if err := c.c.Call(c.s, "%s", req, resp); err != nil {
 		return nil, err
 	}
