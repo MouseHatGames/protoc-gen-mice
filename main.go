@@ -11,6 +11,7 @@ import (
 
 	"github.com/MouseHatGames/protoc-gen-mice/generator"
 	"github.com/MouseHatGames/protoc-gen-mice/models"
+	"github.com/MouseHatGames/protoc-gen-mice/options"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 	"google.golang.org/protobuf/types/pluginpb"
@@ -21,6 +22,8 @@ const OutputFileExtension = ".pb.mice.go"
 func main() {
 	inFile := flag.String("input", "", "")
 	flag.Parse()
+
+	opts := options.ReadOptions()
 
 	var in []byte
 	var err error
@@ -37,7 +40,7 @@ func main() {
 		log.Fatalf("failed to read input: %s", err)
 	}
 
-	out, err := run(in)
+	out, err := run(in, opts)
 	if err != nil {
 		log.Fatalf("failed to run: %s", err)
 	}
@@ -45,7 +48,7 @@ func main() {
 	os.Stdout.Write(out)
 }
 
-func run(in []byte) ([]byte, error) {
+func run(in []byte, opts *options.Options) ([]byte, error) {
 	req := &pluginpb.CodeGeneratorRequest{}
 	if err := proto.Unmarshal(in, req); err != nil {
 		return nil, fmt.Errorf("decode input: %w", err)
@@ -54,7 +57,7 @@ func run(in []byte) ([]byte, error) {
 	gen := &responseGenerator{}
 
 	for _, file := range req.ProtoFile {
-		gen.Append(file)
+		gen.Append(file, opts)
 	}
 
 	return proto.Marshal(&gen.resp)
@@ -68,13 +71,13 @@ func (g *responseGenerator) error(err string) {
 	g.resp.Error = &err
 }
 
-func (g *responseGenerator) Append(fdesc *descriptorpb.FileDescriptorProto) error {
+func (g *responseGenerator) Append(fdesc *descriptorpb.FileDescriptorProto, opts *options.Options) error {
 	if fdesc.Options == nil || fdesc.Options.GoPackage == nil {
 		g.error(fmt.Sprintf("file %s is missing go_package option", fdesc.GetName()))
 		return nil
 	}
 
-	model := models.NewFileFromProto(fdesc)
+	model := models.NewFileFromProto(fdesc, opts)
 	if len(model.Services) == 0 {
 		return nil
 	}

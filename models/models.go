@@ -1,8 +1,10 @@
 package models
 
 import (
+	"path/filepath"
 	"strings"
 
+	"github.com/MouseHatGames/protoc-gen-mice/options"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -13,8 +15,9 @@ type File struct {
 }
 
 type Service struct {
-	Name    string
-	Methods []*Method
+	Name     string
+	UglyName string
+	Methods  []*Method
 }
 
 type Method struct {
@@ -23,22 +26,26 @@ type Method struct {
 	OutType string
 }
 
-func NewFileFromProto(desc *descriptorpb.FileDescriptorProto) *File {
+func NewFileFromProto(desc *descriptorpb.FileDescriptorProto, opts *options.Options) *File {
 	file := &File{
 		GoPackage: getPackageName(*desc.GetOptions().GoPackage),
 		Package:   desc.GetPackage(),
 	}
 
 	for _, svc := range desc.Service {
-		file.Services = append(file.Services, file.newServiceFromProto(svc))
+		fname := strings.TrimSuffix(desc.GetName(), filepath.Ext(desc.GetName()))
+		fname = strings.TrimPrefix(fname, opts.FilePrefix)
+
+		file.Services = append(file.Services, file.newServiceFromProto(svc, fname))
 	}
 
 	return file
 }
 
-func (f *File) newServiceFromProto(desc *descriptorpb.ServiceDescriptorProto) *Service {
+func (f *File) newServiceFromProto(desc *descriptorpb.ServiceDescriptorProto, fileName string) *Service {
 	svc := &Service{
-		Name: desc.GetName(),
+		Name:     desc.GetName(),
+		UglyName: fileName,
 	}
 
 	for _, met := range desc.Method {
