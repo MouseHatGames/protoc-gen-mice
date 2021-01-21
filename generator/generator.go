@@ -38,26 +38,35 @@ import (
 `, g.f.GoPackage)
 
 	for _, svc := range g.f.Services {
-		g.writeServiceInterface(svc)
+		g.writeServiceInterface(svc, true)
+		g.writeServiceInterface(svc, false)
 		g.writeServiceClient(svc)
 		g.writeRegisterFunction(svc)
 	}
 }
 
-func (g *generator) writeServiceInterface(svc *models.Service) {
-	fmt.Fprintf(g.w, "type %s interface {\n", svc.Name)
+func (g *generator) writeServiceInterface(svc *models.Service, server bool) {
+	if server {
+		fmt.Fprintf(g.w, "type %sServer interface {\n", svc.Name)
+	} else {
+		fmt.Fprintf(g.w, "type %s interface {\n", svc.Name)
+	}
 
 	for _, m := range svc.Methods {
 		fmt.Fprint(g.w, "\t")
-		g.writeMethodDefinition(m)
+		g.writeMethodDefinition(m, server)
 		fmt.Fprint(g.w, "\n")
 	}
 
 	fmt.Fprintln(g.w, "}")
 }
 
-func (g *generator) writeMethodDefinition(m *models.Method) {
-	fmt.Fprintf(g.w, "%s(ctx context.Context, req *%s, resp *%s) error", m.Name, m.InType, m.OutType)
+func (g *generator) writeMethodDefinition(m *models.Method, server bool) {
+	if server {
+		fmt.Fprintf(g.w, "%s(ctx context.Context, req *%s, resp *%s) error", m.Name, m.InType, m.OutType)
+	} else {
+		fmt.Fprintf(g.w, "%s(ctx context.Context, req *%s) (*%s, error)", m.Name, m.InType, m.OutType)
+	}
 }
 
 func (g *generator) writeServiceClient(svc *models.Service) {
@@ -70,7 +79,7 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 
 	for _, m := range svc.Methods {
 		fmt.Fprintf(g.w, `func (c *impl%s) `, svc.Name)
-		g.writeMethodDefinition(m)
+		g.writeMethodDefinition(m, false)
 
 		fmt.Fprintf(g.w, ` {
 	resp := new(%s)
@@ -103,7 +112,7 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 }
 
 func (g *generator) writeRegisterFunction(svc *models.Service) {
-	fmt.Fprintf(g.w, "func Register%sHandler(srv server.Server, handler %s) {\n", svc.Name, svc.Name)
+	fmt.Fprintf(g.w, "func Register%sHandler(srv server.Server, handler %sServer) {\n", svc.Name, svc.Name)
 
 	fmt.Fprint(g.w, "\tsrv.AddHandler(handler, ")
 
