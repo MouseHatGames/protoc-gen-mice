@@ -75,6 +75,10 @@ func (g *responseGenerator) Append(fdesc *descriptorpb.FileDescriptorProto) erro
 	}
 
 	model := models.NewFileFromProto(fdesc)
+	if len(model.Services) == 0 {
+		return nil
+	}
+
 	content := generator.Generate(model)
 
 	// Replace extension with .pb.mice.go
