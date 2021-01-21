@@ -57,7 +57,7 @@ func (g *generator) writeServiceInterface(svc *models.Service) {
 }
 
 func (g *generator) writeMethodDefinition(m *models.Method) {
-	fmt.Fprintf(g.w, "%s(ctx context.Context, req *%s) (*%s, error)", m.Name, m.InType, m.OutType)
+	fmt.Fprintf(g.w, "%s(ctx context.Context, req *%s, resp *%s) error", m.Name, m.InType, m.OutType)
 }
 
 func (g *generator) writeServiceClient(svc *models.Service) {
