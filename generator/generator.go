@@ -114,14 +114,10 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 func (g *generator) writeRegisterFunction(svc *models.Service) {
 	fmt.Fprintf(g.w, "func Register%sHandler(srv server.Server, handler %sServer) {\n", svc.Name, svc.Name)
 
-	fmt.Fprint(g.w, "\tsrv.AddHandler(handler, ")
+	fmt.Fprintf(g.w, "\tsrv.AddHandler(handler, \"%s\"", svc.Name)
 
-	for i, m := range svc.Methods {
-		fmt.Fprintf(g.w, `"%s"`, m.Name)
-
-		if i < len(svc.Methods)-1 {
-			fmt.Fprint(g.w, ", ")
-		}
+	for _, m := range svc.Methods {
+		fmt.Fprintf(g.w, `, "%s"`, m.Name)
 	}
 
 	fmt.Fprintln(g.w, ")\n}")
