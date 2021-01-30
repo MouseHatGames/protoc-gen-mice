@@ -92,7 +92,7 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 `, m.OutType, m.Name)
 	}
 
-	fmt.Fprintf(g.w, `func New%sClient(cl client.Client) %s {
+	fmt.Fprintf(g.w, `func New%s(cl client.Client) %s {
 	return &impl%s{
 		c: cl,
 		s: "%s",
@@ -101,7 +101,7 @@ func (g *generator) writeServiceClient(svc *models.Service) {
 
 `, svc.Name, svc.Name, svc.Name, svc.UglyName)
 
-	fmt.Fprintf(g.w, `func New%sClientWithHost(host string, cl client.Client) %s {
+	fmt.Fprintf(g.w, `func New%sWithHost(host string, cl client.Client) %s {
 	return &impl%s{
 		c: cl,
 		s: host,

@@ -48,6 +48,10 @@ func (f *File) newServiceFromProto(desc *descriptorpb.ServiceDescriptorProto, fi
 		UglyName: fileName,
 	}
 
+	// if strings.HasSuffix(svc.Name, "Service") {
+	// 	svc.Name = strings.TrimSuffix(svc.Name, "Service")
+	// }
+
 	for _, met := range desc.Method {
 		svc.Methods = append(svc.Methods, f.newMethodFromProto(met))
 	}
