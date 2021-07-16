@@ -16,7 +16,7 @@ type File struct {
 
 type Service struct {
 	Name     string
-	UglyName string
+	UglyName string // Name inferred from the file name
 	Methods  []*Method
 }
 

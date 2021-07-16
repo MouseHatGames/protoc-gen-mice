@@ -8,6 +8,6 @@ func ReadOptions() *Options {
 	//TODO Read options from protoc command line
 
 	return &Options{
-		FilePrefix: "svc-",
+		FilePrefix: "svc_",
 	}
 }
